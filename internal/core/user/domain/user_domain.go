@@ -2,6 +2,7 @@ package domain
 
 import "time"
 
+// tabel database
 type User struct {
 	ID        int64
 	Name      string
