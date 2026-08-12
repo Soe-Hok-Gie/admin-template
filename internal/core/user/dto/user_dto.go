@@ -11,7 +11,10 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 type UserResponse struct {
-	Name      string    `json:"Name"`
+	ID        int64     `json:"id"`
+	Name      string    `json:"name"`
+	Email     string    `json:"email"`
+	Role      string    `json:"role"`
 	CreatedAt time.Time `json:"created_at"`
 }
 
