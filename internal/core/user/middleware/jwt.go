@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"admin-template/internal/core/user/utils"
 	"context"
 	"net/http"
 	"strings"
@@ -29,7 +30,7 @@ func JWTMiddleware() func(http.Handler) http.Handler {
 				http.Error(writer, "missing token", http.StatusUnauthorized)
 				return
 			}
-			userID, err := ValidateToken(tokenstr)
+			userID, err := utils.ValidateToken(tokenstr)
 			if err != nil {
 				http.Error(writer, err.Error(), http.StatusUnauthorized)
 				return
