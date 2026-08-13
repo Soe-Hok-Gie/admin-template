@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"net/http"
 	"strings"
 )
@@ -28,6 +29,13 @@ func JWTMiddleware() func(http.Handler) http.Handler {
 				http.Error(writer, "missing token", http.StatusUnauthorized)
 				return
 			}
+			userID, err := ValidateToken(tokenstr)
+			if err != nil {
+				http.Error(writer, err.Error(), http.StatusUnauthorized)
+				return
+			}
+			ctx := context.WithValue(request.Context(), UserIDKey, *userID)
+			next.ServeHTTP(writer, request.WithContext(ctx))
 
 		})
 
