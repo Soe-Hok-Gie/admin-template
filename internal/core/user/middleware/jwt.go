@@ -1,6 +1,9 @@
 package middleware
 
-import "net/http"
+import (
+	"net/http"
+	"strings"
+)
 
 type ContextKey string
 
@@ -8,6 +11,25 @@ const UserIDKey ContextKey = "userID"
 
 func JWTMiddleware() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(writer http.ResponseWriter, request *http.Request) {
+
+			//logic
+			authheader := request.Header.Get("Authorization")
+			if authheader == "" {
+				http.Error(writer, "missing header", http.StatusUnauthorized)
+				return
+			}
+			if !strings.HasPrefix(authheader, "Bearier") {
+				http.Error(writer, "missing bearier", http.StatusUnauthorized)
+				return
+			}
+			tokenstr := strings.TrimPrefix(authheader, "Bearier ")
+			if tokenstr == "" {
+				http.Error(writer, "missing token", http.StatusUnauthorized)
+				return
+			}
+
+		})
 
 	}
 }
