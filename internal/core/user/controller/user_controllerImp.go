@@ -2,14 +2,17 @@ package controller
 
 import (
 	"admin-template/internal/core/user/dto"
+	"admin-template/internal/core/user/middleware"
 	"admin-template/internal/core/user/service"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 )
 
 type UserControllerImp struct {
 	authservice service.AuthService
+	userservice service.UserService
 }
 
 func (controller *UserControllerImp) Register(writer http.ResponseWriter, request *http.Request) {
@@ -110,4 +113,34 @@ func (controller *UserControllerImp) Login(writer http.ResponseWriter, request *
 		Data:   userResponse.User,
 	})
 
+}
+
+func (controller *UserControllerImp) Profile(writer http.ResponseWriter, request *http.Request) {
+	ctx := request.Context()
+	//panggil middleware
+	userID, ok := request.Context().Value(middleware.UserIDKey).(int64)
+	if !ok {
+		writer.Header().Set("content-type", "application/json")
+		writer.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(writer).Encode(dto.Response{
+			Code:   http.StatusUnauthorized,
+			Status: "unauthorized",
+			Data:   nil,
+		})
+		return
+	}
+	// Gunakan blank identifier (_) untuk MENOLAK/MEMBUANG domain.User yang berisi password,jadi kita pakai data dari dto
+	_, userDto, err := controller.userservice.GetProfile(ctx, userID)
+	if err != nil {
+		fmt.Println("Profil error:", err)
+		http.Error(writer, "Unauthorized", http.StatusUnauthorized)
+		return
+	}
+	writer.Header().Set("content-type", "application/json")
+	writer.WriteHeader(http.StatusCreated)
+	json.NewEncoder(writer).Encode(dto.Response{
+		Code:   http.StatusCreated,
+		Status: "Created",
+		Data:   userDto,
+	})
 }
