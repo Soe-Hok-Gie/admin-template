@@ -10,6 +10,7 @@ type User struct {
 	Password  string
 	Status    string
 	RoleID    int64
+	roleName  string
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
