@@ -15,8 +15,8 @@ type userRepositoryImp struct {
 }
 
 func (repository *userRepositoryImp) Insert(ctx context.Context, user domain.User) (domain.User, error) {
-	script := "INSERT INTO users (name,email,password,role,status,created_at) Values (?,?,?,?,?,?)"
-	result, err := repository.DB.ExecContext(ctx, script, user.Name, user.Email, user.Password, user.RoleID, user.Status, user.CreatedAt)
+	script := "INSERT INTO users (name,email,password,status,role_id,created_at,updated_at) Values (?,?,?,?,?,?,?)"
+	result, err := repository.DB.ExecContext(ctx, script, user.Name, user.Email, user.Password, user.Status, user.RoleID, user.CreatedAt, user.UpdatedAt)
 	if err != nil {
 		if IsDuplicateKeyError(err) {
 			return user, err
@@ -41,13 +41,28 @@ func IsDuplicateKeyError(err error) bool {
 }
 
 func (repository *userRepositoryImp) GetByEmail(ctx context.Context, email string) (domain.User, error) {
-	script := "SELECT id, name, email, role FROM users WHERE name = ?"
+	script := "SELECT id, name, email, status, role_id FROM users WHERE name = ?"
 	row := repository.DB.QueryRowContext(ctx, script, email)
 
 	var u domain.User
-	err := row.Scan(&u.ID, &u.Name, &u, email, &u.RoleID)
+	err := row.Scan(&u.ID, &u.Name, &u, email, &u.Status, &u.RoleID)
 	if err != nil {
 		log.Println("user not found:", err)
 	}
 	return u, nil
+}
+
+func (repository *userRepositoryImp) GedById(ctx context.Context, userID int64) (domain.User, error) {
+	script := "SELECT id, name, email, password, status, role, created_at, updated_at FROM users WHERE id = ?"
+	row := repository.DB.QueryRowContext(ctx, script, userID)
+
+	var u domain.User
+	err := row.Scan(&u.ID, &u.Name, &u.Email, &u.Password, &u.Status, &u.RoleID, &u.CreatedAt, &u.UpdatedAt)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return domain.User{}, sql.ErrNoRows
+		}
+	}
+	return u, nil
+
 }
