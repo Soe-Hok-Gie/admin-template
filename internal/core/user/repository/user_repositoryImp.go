@@ -14,6 +14,10 @@ type userRepositoryImp struct {
 	DB *sql.DB
 }
 
+func NewUserRepository(DB *sql.DB) UserRepository {
+	return &userRepositoryImp{DB: DB}
+}
+
 func (repository *userRepositoryImp) Insert(ctx context.Context, user domain.User) (domain.User, error) {
 	script := "INSERT INTO users (name,email,password,status,role_id,created_at,updated_at) Values (?,?,?,?,?,?,?)"
 	result, err := repository.DB.ExecContext(ctx, script, user.Name, user.Email, user.Password, user.Status, user.RoleID, user.CreatedAt, user.UpdatedAt)
