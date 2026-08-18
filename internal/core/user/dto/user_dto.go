@@ -4,7 +4,9 @@ import "time"
 
 type RegisterRequest struct {
 	Name     string `json:"name"`
+	Email    string `json:"email"`
 	Password string `json:"password"`
+	RoleID   int64  `json:"role_id"`
 }
 type LoginRequest struct {
 	Name     string `json:"name"`
@@ -15,6 +17,13 @@ type UserResponse struct {
 	Name      string    `json:"name"`
 	Email     string    `json:"email"`
 	Role      string    `json:"role"`
+	CreatedAt time.Time `json:"created_at"`
+}
+type AuthResponse struct {
+	ID        int64     `json:"id"`
+	Name      string    `json:"name"`
+	Email     string    `json:"email"`
+	RoleID    int64     `json:"role_id"` // Mengembalikan angka langsung dari DB
 	CreatedAt time.Time `json:"created_at"`
 }
 
