@@ -30,30 +30,39 @@ var (
 	ErrInternal          = errors.New("internal server error")
 )
 
-func (service *AuthServiceImp) Register(ctx context.Context, input dto.RegisterRequest) (dto.UserResponse, error) {
+func (service *AuthServiceImp) Register(ctx context.Context, input dto.RegisterRequest) (dto.AuthResponse, error) {
 	if input.Name == "" || input.Password == "" {
-		return dto.UserResponse{}, ErrInvalidInput
+		return dto.AuthResponse{}, ErrInvalidInput
 	}
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return dto.UserResponse{}, fmt.Errorf("failed hash :%w", err)
+		return dto.AuthResponse{}, fmt.Errorf("failed hash :%w", err)
 	}
 	userDomain := domain.User{
 		Name:      input.Name,
+		Email:     input.Email,
 		Password:  string(hashedPassword),
-		RoleID:    1,
+		Status:    "active",
+		RoleID:    input.RoleID,
 		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 
 	saveUser, err := service.UserRepository.Insert(ctx, userDomain)
 	if err != nil {
 		if repository.IsDuplicateKeyError(err) {
-			return dto.UserResponse{}, ErrUsernameExists
+			return dto.AuthResponse{}, ErrUsernameExists
 		}
+		// JANGAN DIABAIKAN! Jika database menolak (misal karena role_id tidak ada),
+		// logic harus berhenti di sini dan langsung mengembalikan error ke Postman
+		return dto.AuthResponse{}, err
 	}
-	userResponse := dto.UserResponse{
+	userResponse := dto.AuthResponse{
+		ID:        saveUser.ID,
 		Name:      saveUser.Name,
+		Email:     saveUser.Email,
+		RoleID:    saveUser.RoleID,
 		CreatedAt: saveUser.CreatedAt,
 	}
 	return userResponse, nil
