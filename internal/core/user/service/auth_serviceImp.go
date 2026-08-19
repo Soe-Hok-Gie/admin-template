@@ -9,6 +9,7 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strconv"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -70,7 +71,7 @@ func (service *AuthServiceImp) Register(ctx context.Context, input dto.RegisterR
 
 func (service *AuthServiceImp) Login(ctx context.Context, input dto.LoginRequest) (dto.LoginResponse, error) {
 
-	user, err := service.UserRepository.GetByEmail(ctx, input.Name)
+	user, err := service.UserRepository.GetByEmail(ctx, input.Email)
 
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -83,11 +84,19 @@ func (service *AuthServiceImp) Login(ctx context.Context, input dto.LoginRequest
 		fmt.Println("error credential")
 		return dto.LoginResponse{}, ErrInvalidCredential
 	}
+
 	token, err := utils.GenerateToken(user.ID)
 	if err != nil {
-		return dto.LoginResponse{
-			AccessToken: token,
-		}, nil
+		return dto.LoginResponse{}, err
 	}
-	return dto.LoginResponse{}, nil
+	return dto.LoginResponse{
+		AccessToken: token,
+		User: dto.UserResponse{
+			ID:        user.ID,
+			Name:      user.Name,
+			Email:     user.Email,
+			Role:      strconv.Itoa(int(user.RoleID)),
+			CreatedAt: user.CreatedAt,
+		},
+	}, nil
 }

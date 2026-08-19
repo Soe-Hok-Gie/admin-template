@@ -107,6 +107,7 @@ func (controller *UserControllerImp) Login(writer http.ResponseWriter, request *
 		})
 		return
 	}
+
 	http.SetCookie(writer, &http.Cookie{
 		Name:     "token",
 		Value:    userResponse.AccessToken,
@@ -116,10 +117,10 @@ func (controller *UserControllerImp) Login(writer http.ResponseWriter, request *
 		MaxAge:   900,
 	})
 	writer.Header().Set("content-type", "application/json")
-	writer.WriteHeader(http.StatusCreated)
+	writer.WriteHeader(http.StatusOK)
 	json.NewEncoder(writer).Encode(dto.Response{
-		Code:   http.StatusCreated,
-		Status: "created",
+		Code:   http.StatusOK,
+		Status: "ok",
 		Data:   userResponse.User,
 	})
 

@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"log"
 
 	"admin-template/internal/core/user/domain"
 
@@ -45,13 +44,13 @@ func IsDuplicateKeyError(err error) bool {
 }
 
 func (repository *userRepositoryImp) GetByEmail(ctx context.Context, email string) (domain.User, error) {
-	script := "SELECT id, name, email, status, role_id FROM users WHERE name = ?"
+	script := "SELECT id, name, email,password, status, role_id, created_at FROM users WHERE email = ?"
 	row := repository.DB.QueryRowContext(ctx, script, email)
 
 	var u domain.User
-	err := row.Scan(&u.ID, &u.Name, &u, email, &u.Status, &u.RoleID)
+	err := row.Scan(&u.ID, &u.Name, &u.Email, &u.Password, &u.Status, &u.RoleID, &u.CreatedAt)
 	if err != nil {
-		log.Println("user not found:", err)
+		return u, err
 	}
 	return u, nil
 }

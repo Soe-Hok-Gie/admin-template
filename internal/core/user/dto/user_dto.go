@@ -9,7 +9,7 @@ type RegisterRequest struct {
 	RoleID   int64  `json:"role_id"`
 }
 type LoginRequest struct {
-	Name     string `json:"name"`
+	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 type UserResponse struct {
@@ -29,7 +29,7 @@ type AuthResponse struct {
 
 type LoginResponse struct {
 	User        UserResponse `json:"user"`
-	AccessToken string       `json: "access_token"`
+	AccessToken string       `json:"access_token"`
 }
 
 // standart response data
