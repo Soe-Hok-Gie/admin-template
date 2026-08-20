@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"fmt"
 
 	"admin-template/internal/core/user/domain"
 
@@ -56,15 +57,14 @@ func (repository *userRepositoryImp) GetByEmail(ctx context.Context, email strin
 }
 
 func (repository *userRepositoryImp) GedById(ctx context.Context, userID int64) (domain.User, error) {
-	script := "SELECT id, name, email, password, status, role, created_at, updated_at FROM users WHERE id = ?"
+	script := "SELECT id, name, email, password, status, role_id, created_at, updated_at FROM users WHERE id = ?"
 	row := repository.DB.QueryRowContext(ctx, script, userID)
 
 	var u domain.User
 	err := row.Scan(&u.ID, &u.Name, &u.Email, &u.Password, &u.Status, &u.RoleID, &u.CreatedAt, &u.UpdatedAt)
 	if err != nil {
-		if err == sql.ErrNoRows {
-			return domain.User{}, sql.ErrNoRows
-		}
+		fmt.Println("Gagal melakukan scan user di repository:", err)
+		return domain.User{}, err
 	}
 	return u, nil
 
