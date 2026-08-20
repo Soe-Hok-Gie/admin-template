@@ -21,11 +21,11 @@ func JWTMiddleware() func(http.Handler) http.Handler {
 				http.Error(writer, "missing header", http.StatusUnauthorized)
 				return
 			}
-			if !strings.HasPrefix(authheader, "Bearier") {
+			if !strings.HasPrefix(authheader, "Bearer") {
 				http.Error(writer, "missing bearier", http.StatusUnauthorized)
 				return
 			}
-			tokenstr := strings.TrimPrefix(authheader, "Bearier ")
+			tokenstr := strings.TrimPrefix(authheader, "Bearer ")
 			if tokenstr == "" {
 				http.Error(writer, "missing token", http.StatusUnauthorized)
 				return
