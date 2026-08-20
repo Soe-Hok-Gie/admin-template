@@ -147,6 +147,7 @@ func (controller *UserControllerImp) Profile(writer http.ResponseWriter, request
 		http.Error(writer, "Unauthorized", http.StatusUnauthorized)
 		return
 	}
+
 	writer.Header().Set("content-type", "application/json")
 	writer.WriteHeader(http.StatusCreated)
 	json.NewEncoder(writer).Encode(dto.Response{
