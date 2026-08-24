@@ -27,30 +27,32 @@ func (controller *OrderControllerImp) Checkout(writer http.ResponseWriter, reque
 	}
 
 	response, err := controller.orderService.CreateOrder(ctx, userID)
+	writer.Header().Set("content-type", "application/json")
 	if err != nil {
-		writer.WriteHeader(http.StatusUnauthorized)
+		// ERROR 1: validasi bisnis (stok habis atau bad request)
+		if err.Error() == "out of stock" || err.Error() == "product not found" {
+			writer.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(writer).Encode(dto.Response{
+				Code:   http.StatusBadRequest,
+				Status: "Bad Request",
+				Data:   err.Error(),
+			})
+			return
+		}
+		//Error 2 : Server Error
+		writer.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(writer).Encode(dto.Response{
-			Code:   http.StatusUnauthorized,
-			Status: "Unauthorized",
-			Data:   nil,
+			Code:   http.StatusInternalServerError,
+			Status: "500",
+			Data:   "server error: " + err.Error(),
 		})
 		return
 	}
-	writer.Header().Set("content-type", "application/json")
-	writer.WriteHeader(http.StatusInternalServerError)
-	json.NewEncoder(writer).Encode(dto.Response{
-		Code:   http.StatusInternalServerError,
-		Status: "500",
-		Data:   "server error",
-	})
-	return
 
-	writer.Header().Set("content-type", "application")
 	writer.WriteHeader(http.StatusCreated)
 	json.NewEncoder(writer).Encode(dto.Response{
 		Code:   http.StatusCreated,
 		Status: "create",
 		Data:   response,
 	})
-
 }
