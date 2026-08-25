@@ -4,6 +4,7 @@ type OrderRequest struct {
 	OrderID     string `json:"order_id"`
 	GrossAmount int64  `json:"gross_amount"`
 	ItemName    string `json:"item_name"`
+	UserID      string `json:"_"`
 }
 
 type OrderResponse struct {
