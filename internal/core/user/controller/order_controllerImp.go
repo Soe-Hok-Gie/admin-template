@@ -3,16 +3,30 @@ package controller
 import (
 	"admin-template/internal/core/user/dto"
 	"admin-template/internal/core/user/middleware"
+	"admin-template/internal/core/user/service"
 	"encoding/json"
 	"net/http"
 )
 
 type OrderControllerImp struct {
+	orderService service.OrderService
 }
 
 func (controller *OrderControllerImp) Checkout(writer http.ResponseWriter, request *http.Request) {
-
 	ctx := request.Context()
+
+	var req dto.OrderRequest
+	if err := json.NewDecoder(request.Body).Decode(&req); err != nil {
+		writer.Header().Set("Content-Type", "application/json")
+		writer.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(writer).Encode(dto.Response{
+			Code:   http.StatusBadRequest,
+			Status: "Bad Request",
+			Data:   "invalid request",
+		})
+		return
+	}
+
 	//panggil userId
 	userID, ok := request.Context().Value(middleware.UserIDKey).(int64)
 	if !ok {
@@ -26,7 +40,10 @@ func (controller *OrderControllerImp) Checkout(writer http.ResponseWriter, reque
 		return
 	}
 
-	response, err := controller.orderService.CreateOrder(ctx, userID)
+	//Masukkan userID yang sudah tervalidasi ke dalam struct req
+	req.UserID = userID
+
+	response, err := controller.orderService.CreateOrder(ctx, req)
 	writer.Header().Set("content-type", "application/json")
 	if err != nil {
 		// ERROR 1: validasi bisnis (stok habis atau bad request)
