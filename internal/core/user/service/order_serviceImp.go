@@ -30,15 +30,13 @@ func (service *OrderServiceImp) CreateOrder(ctx context.Context, req dto.OrderRe
 		return nil, err
 	}
 
-	// Siapkan data untuk dikirim (Request Payload) ke Midtrans Snap API
+	// Siapkan data untuk dikirim (Request Payload) ke Midtrans Snap API (menyiapkan document midtrans)
 	payload := map[string]interface{}{
 		"transaction_details": map[string]interface{}{
 			"order_id":     req.OrderID,
 			"gross_amount": req.GrossAmount,
 		},
 	}
-
-	// 4. Proses encode ke JSON
 	jsonPayload, err := json.Marshal(payload)
 	if err != nil {
 		return nil, err
@@ -51,10 +49,12 @@ func (service *OrderServiceImp) CreateOrder(ctx context.Context, req dto.OrderRe
 		return nil, err
 	}
 
+	//service.ServerKey & Authorization adalah kunci rahasia/tanda tangan digital toko kita.
 	auth := base64.StdEncoding.EncodeToString([]byte(service.ServerKey + ""))
 	httpReq.Header.Set("Authorization", "Basic "+auth)
 	httpReq.Header.Set("Content-Type", "application/json")
 
+	//menerima jawaban dari midtrans
 	client := &http.Client{}
 	res, err := client.Do(httpReq)
 	if err != nil {
@@ -66,6 +66,7 @@ func (service *OrderServiceImp) CreateOrder(ctx context.Context, req dto.OrderRe
 	var midtransRes map[string]string
 	json.NewDecoder(res.Body).Decode(&midtransRes)
 
+	//output ke pembeli
 	return &dto.OrderResponse{
 		OrderID:    req.OrderID,
 		PaymentURL: midtransRes["redirect_url"], // URL ini yang diberikan ke pembeli
