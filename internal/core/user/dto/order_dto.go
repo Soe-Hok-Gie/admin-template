@@ -12,3 +12,11 @@ type OrderResponse struct {
 	PaymentURL string `json:"payment_url"`
 	Status     string `json:"status"`
 }
+
+type WebhookNotification struct {
+	TransactionStatus string `json:"transaction_status"`
+	OrderID           string `json:"order_id"`
+	StatusCode        string `json:"status_code"`
+	SignatureKey      string `json:"signature_key"`
+	GrossAmount       int64  `json:"gross_amount"`
+}
