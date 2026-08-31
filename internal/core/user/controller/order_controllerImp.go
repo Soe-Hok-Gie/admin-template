@@ -73,3 +73,19 @@ func (controller *OrderControllerImp) Checkout(writer http.ResponseWriter, reque
 		Data:   response,
 	})
 }
+
+func (controller *OrderControllerImp) Webhook(writer http.ResponseWriter, request *http.Request) {
+
+	var notification dto.WebhookNotification
+	if err := json.NewDecoder(request.Body).Decode(&notification); err != nil {
+		writer.Header().Set("content-type", "application/json")
+		writer.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(writer).Encode(dto.Response{
+			Code:   http.StatusBadRequest,
+			Status: "bad request",
+			Data:   "400",
+		})
+		return
+	}
+
+}
