@@ -104,6 +104,4 @@ func (controller *OrderControllerImp) Webhook(writer http.ResponseWriter, reques
 		Status: "OK",
 		Data:   "succes",
 	})
-	return
-
 }
