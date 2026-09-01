@@ -7,4 +7,5 @@ import (
 
 type OrderRepository interface {
 	SaveOrder(ctx context.Context, order domain.Order) error
+	UpdateStatus(status domain.StatusOrder) error
 }

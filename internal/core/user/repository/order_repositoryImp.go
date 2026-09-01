@@ -18,3 +18,13 @@ func (repository *orderRepositoryImp) SaveOrder(ctx context.Context, order domai
 	}
 	return nil
 }
+
+func (repository *orderRepositoryImp) UpdateStatus(status domain.StatusOrder) error {
+	script := "UPDATE orders SET status=? WHERE id=?"
+	_, err := repository.DB.Exec(script, status.OrderID, status.Status)
+	if err != nil {
+		return err
+	}
+	return nil
+
+}
