@@ -6,8 +6,11 @@ import (
 	"admin-template/internal/core/user/repository"
 	"bytes"
 	"context"
+	"crypto/sha512"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
@@ -72,4 +75,39 @@ func (service *OrderServiceImp) CreateOrder(ctx context.Context, req dto.OrderRe
 		PaymentURL: midtransRes["redirect_url"], // URL ini yang diberikan ke pembeli
 		Status:     "PENDING",
 	}, nil
+}
+
+func (service *OrderServiceImp) ProcessWebhook(notification dto.WebhookNotification) error {
+	// Ambil Server Key Anda dari konfigurasi/env
+	serverKey := "YOUR_MIDTRANS_SERVER_KEY"
+
+	//verifikasi payload midtrans
+	payloadSignature := notification.OrderID + notification.StatusCode + notification.GrossAmount + serverKey
+	hash := sha512.Sum512([]byte(payloadSignature))
+	expectedSignatured := hex.EncodeToString(hash[:])
+
+	if notification.SignatureKey != expectedSignatured {
+		return fmt.Errorf("invalid signature key, request untrusted. Got: %s, Expected: %s",
+			notification.SignatureKey,
+			expectedSignatured,
+		)
+	}
+
+	//terjemahin status midtrans ke app
+	var finalStatus string
+	switch notification.TransactionStatus {
+	case "settlement", "capture":
+		finalStatus = "PAID"
+	case "expire", "cancel":
+		finalStatus = "EXPIRED"
+	}
+
+	if finalStatus != "" {
+		inputStatus := domain.StatusOrder{
+			OrderID: notification.OrderID,
+			Status:  finalStatus,
+		}
+		return service.orderRepository.UpdateStatus(inputStatus)
+	}
+	return nil
 }
