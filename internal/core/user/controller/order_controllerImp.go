@@ -12,6 +12,14 @@ type OrderControllerImp struct {
 	orderService service.OrderService
 }
 
+func NewOrderController(
+	orderService service.OrderService,
+) OrderController {
+	return &OrderControllerImp{
+		orderService: orderService,
+	}
+}
+
 func (controller *OrderControllerImp) Checkout(writer http.ResponseWriter, request *http.Request) {
 	ctx := request.Context()
 

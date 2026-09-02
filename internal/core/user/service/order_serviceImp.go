@@ -19,6 +19,15 @@ type OrderServiceImp struct {
 	ServerKey       string // API Server Key dari Dashboard Midtrans Sandbox
 }
 
+func NewOrderService(
+	orderRepository repository.OrderRepository,
+) OrderService {
+	return &OrderServiceImp{
+		orderRepository: orderRepository,
+	}
+
+}
+
 func (service *OrderServiceImp) CreateOrder(ctx context.Context, req dto.OrderRequest) (*dto.OrderResponse, error) {
 	// 1. Bungkus data ke dalam struct domain.Order sesuai kebutuhan fungsi SaveOrder
 	orderData := domain.Order{
