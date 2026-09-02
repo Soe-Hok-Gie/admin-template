@@ -23,6 +23,7 @@ func (service *OrderServiceImp) CreateOrder(ctx context.Context, req dto.OrderRe
 	// 1. Bungkus data ke dalam struct domain.Order sesuai kebutuhan fungsi SaveOrder
 	orderData := domain.Order{
 		OrderID: req.OrderID,
+		UserID:  req.UserID,
 		Amount:  req.GrossAmount,
 		Status:  "pending",
 	}
