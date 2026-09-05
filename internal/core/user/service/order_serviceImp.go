@@ -11,19 +11,24 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
+	"os"
+	"strings"
 )
 
 type OrderServiceImp struct {
 	orderRepository repository.OrderRepository
-	ServerKey       string // API Server Key dari Dashboard Midtrans Sandbox
+	ServerKey       string
 }
 
 func NewOrderService(
 	orderRepository repository.OrderRepository,
+	serverKey string,
 ) OrderService {
 	return &OrderServiceImp{
 		orderRepository: orderRepository,
+		ServerKey:       strings.TrimSpace(serverKey),
 	}
 
 }
@@ -56,14 +61,16 @@ func (service *OrderServiceImp) CreateOrder(ctx context.Context, req dto.OrderRe
 	}
 
 	//hit api Sandbox Midtrans Snap
-	url := "https://midtrans.com"
+	url := "https://app.sandbox.midtrans.com/snap/v1/transactions"
+	log.Printf("DEBUG URL MIDTRANS: %s", url)
+
 	httpReq, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonPayload))
 	if err != nil {
 		return nil, err
 	}
 
 	//service.ServerKey & Authorization adalah kunci rahasia/tanda tangan digital toko kita.
-	auth := base64.StdEncoding.EncodeToString([]byte(service.ServerKey + ""))
+	auth := base64.StdEncoding.EncodeToString([]byte(service.ServerKey + ":"))
 	httpReq.Header.Set("Authorization", "Basic "+auth)
 	httpReq.Header.Set("Content-Type", "application/json")
 
@@ -76,23 +83,32 @@ func (service *OrderServiceImp) CreateOrder(ctx context.Context, req dto.OrderRe
 	defer res.Body.Close()
 
 	// Baca URL pembayaran (redirect_url) dari response Midtrans
-	var midtransRes map[string]string
+	var midtransRes map[string]interface{}
 	json.NewDecoder(res.Body).Decode(&midtransRes)
+
+	// 3. AMBIL REDIRECT URL DENGAN TYPE ASSERTION KE STRING
+	paymentURL, ok := midtransRes["redirect_url"].(string)
+	if !ok || paymentURL == "" {
+		return nil, fmt.Errorf(
+			"redirect_url tidak ditemukan dari Midtrans: %+v",
+			midtransRes,
+		)
+	}
 
 	//output ke pembeli
 	return &dto.OrderResponse{
 		OrderID:    req.OrderID,
-		PaymentURL: midtransRes["redirect_url"], // URL ini yang diberikan ke pembeli
+		PaymentURL: paymentURL,
 		Status:     "PENDING",
 	}, nil
 }
 
 func (service *OrderServiceImp) ProcessWebhook(notification dto.WebhookNotification) error {
 	// Ambil Server Key Anda dari konfigurasi/env
-	serverKey := "YOUR_MIDTRANS_SERVER_KEY"
+	ServerKey := os.Getenv("KEY_MIDTRANS")
 
 	//verifikasi payload midtrans
-	payloadSignature := notification.OrderID + notification.StatusCode + notification.GrossAmount + serverKey
+	payloadSignature := notification.OrderID + notification.StatusCode + notification.GrossAmount + ServerKey
 	hash := sha512.Sum512([]byte(payloadSignature))
 	expectedSignatured := hex.EncodeToString(hash[:])
 
