@@ -26,8 +26,8 @@ func (repository *orderRepositoryImp) SaveOrder(ctx context.Context, order domai
 }
 
 func (repository *orderRepositoryImp) UpdateStatus(status domain.StatusOrder) error {
-	script := "UPDATE orders SET status=? WHERE id=?"
-	_, err := repository.DB.Exec(script, status.OrderID, status.Status)
+	script := "UPDATE orders SET status=? WHERE order_id=?"
+	_, err := repository.DB.Exec(script, status.Status, status.OrderID)
 	if err != nil {
 		return err
 	}

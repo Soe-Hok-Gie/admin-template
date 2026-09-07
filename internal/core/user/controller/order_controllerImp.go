@@ -98,6 +98,7 @@ func (controller *OrderControllerImp) Webhook(writer http.ResponseWriter, reques
 
 	err := controller.orderService.ProcessWebhook(notification)
 	if err != nil {
+		writer.Header().Set("Content-Type", "application/json")
 		writer.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(writer).Encode(dto.Response{
 			Code:   http.StatusInternalServerError,
@@ -106,6 +107,7 @@ func (controller *OrderControllerImp) Webhook(writer http.ResponseWriter, reques
 		})
 		return
 	}
+	writer.Header().Set("Content-Type", "application/json")
 	writer.WriteHeader(http.StatusOK)
 	json.NewEncoder(writer).Encode(dto.Response{
 		Code:   http.StatusOK,
