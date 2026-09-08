@@ -115,3 +115,36 @@ func (controller *OrderControllerImp) Webhook(writer http.ResponseWriter, reques
 		Data:   "succes",
 	})
 }
+
+func (controller OrderControllerImp) Checkstatus(writer http.ResponseWriter, request *http.Request) {
+	writer.Header().Set("Content-Type", "application/json")
+
+	OrderID := request.URL.Query().Get("order_id")
+
+	if OrderID == "" {
+		writer.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(writer).Encode(dto.Response{
+			Code:   http.StatusBadRequest,
+			Status: "Bad Request",
+			Data:   "400",
+		})
+		return
+	}
+
+	status, err := controller.orderService.CheckStatus(OrderID)
+	if err != nil {
+		writer.WriteHeader(http.StatusNotFound)
+		json.NewEncoder(writer).Encode(dto.Response{
+			Code:   http.StatusNotFound,
+			Status: "NotFound",
+			Data:   "404",
+		})
+		return
+	}
+	writer.WriteHeader(http.StatusOK)
+	json.NewEncoder(writer).Encode(dto.Response{
+		Code:   http.StatusOK,
+		Status: "Ok",
+		Data:   status,
+	})
+}
