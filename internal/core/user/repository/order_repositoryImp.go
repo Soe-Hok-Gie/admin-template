@@ -34,3 +34,15 @@ func (repository *orderRepositoryImp) UpdateStatus(status domain.StatusOrder) er
 	return nil
 
 }
+
+func (repository *orderRepositoryImp) GetStatus(OrderID string) (string, error) {
+	script := "SELECT status FROM orders WHERE order_id=?"
+
+	var status string
+
+	err := repository.DB.QueryRow(script, OrderID).Scan(&status)
+	if err != nil {
+		return "", err
+	}
+	return status, nil
+}
