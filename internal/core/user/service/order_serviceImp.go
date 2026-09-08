@@ -137,3 +137,8 @@ func (service *OrderServiceImp) ProcessWebhook(notification dto.WebhookNotificat
 	}
 	return nil
 }
+
+func (service *OrderServiceImp) CheckStatus(OrderID string) (string, error) {
+	return service.orderRepository.GetStatus(OrderID)
+
+}
