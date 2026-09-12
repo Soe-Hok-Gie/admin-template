@@ -49,6 +49,8 @@ func main() {
 
 	//webhook
 	r.HandleFunc("/payment/notification", orderController.Webhook).Methods("POST")
+	//status
+	r.HandleFunc("/orders/status", orderController.Checkstatus).Methods("GET")
 
 	//rute user, harus proteksi dengan middleware
 	jwtMiddleware := middleware.JWTMiddleware()
