@@ -119,6 +119,12 @@ func (service *OrderServiceImp) ProcessWebhook(notification dto.WebhookNotificat
 		)
 	}
 
+	//Ambil data order asli dari database untuk cek nominal
+	originalOrder, err := service.orderRepository.GetByOrderID(ctx, notification.OrderID)
+	if err != nil {
+		return fmt.Errorf("order not found in database :%w", err)
+	}
+
 	//terjemahin status midtrans ke app
 	var finalStatus string
 	switch notification.TransactionStatus {
