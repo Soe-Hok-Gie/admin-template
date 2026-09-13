@@ -14,6 +14,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -125,6 +126,17 @@ func (service *OrderServiceImp) ProcessWebhook(ctx context.Context, notification
 		return fmt.Errorf("order not found in database :%w", err)
 	}
 
+	//Konversi GrossAmount (string) dari Midtrans ke angka
+	midtransAmount, err := strconv.ParseFloat(notification.GrossAmount, 64)
+	if err != nil {
+		return fmt.Errorf("gagal membaca format amount :%w", err)
+	}
+
+	//Validasi apakah nominalnya cocok dengan database
+	if midtransAmount != float64(originalOrder.Amount) {
+		return fmt.Errorf("nominal pembayaran tidak cocok! Midtrans: %f, Database: %d", midtransAmount, originalOrder.Amount)
+	}
+
 	//terjemahin status midtrans ke app
 	var finalStatus string
 	switch notification.TransactionStatus {
@@ -139,7 +151,7 @@ func (service *OrderServiceImp) ProcessWebhook(ctx context.Context, notification
 			OrderID: notification.OrderID,
 			Status:  finalStatus,
 		}
-		return service.orderRepository.UpdateStatus(inputStatus)
+		return service.orderRepository.UpdateStatus(ctx, inputStatus)
 	}
 	return nil
 }
