@@ -83,6 +83,7 @@ func (controller *OrderControllerImp) Checkout(writer http.ResponseWriter, reque
 }
 
 func (controller *OrderControllerImp) Webhook(writer http.ResponseWriter, request *http.Request) {
+	ctx := request.Context()
 
 	var notification dto.WebhookNotification
 	if err := json.NewDecoder(request.Body).Decode(&notification); err != nil {
@@ -96,7 +97,7 @@ func (controller *OrderControllerImp) Webhook(writer http.ResponseWriter, reques
 		return
 	}
 
-	err := controller.orderService.ProcessWebhook(notification)
+	err := controller.orderService.ProcessWebhook(ctx, notification)
 	if err != nil {
 		writer.Header().Set("Content-Type", "application/json")
 		writer.WriteHeader(http.StatusInternalServerError)

@@ -103,7 +103,7 @@ func (service *OrderServiceImp) CreateOrder(ctx context.Context, req dto.OrderRe
 	}, nil
 }
 
-func (service *OrderServiceImp) ProcessWebhook(notification dto.WebhookNotification) error {
+func (service *OrderServiceImp) ProcessWebhook(ctx context.Context, notification dto.WebhookNotification) error {
 	// Ambil Server Key Anda dari konfigurasi/env
 	ServerKey := os.Getenv("KEY_MIDTRANS")
 
