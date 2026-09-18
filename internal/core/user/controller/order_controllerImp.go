@@ -5,6 +5,7 @@ import (
 	"admin-template/internal/core/user/middleware"
 	"admin-template/internal/core/user/service"
 	"encoding/json"
+	"log"
 	"net/http"
 )
 
@@ -99,12 +100,14 @@ func (controller *OrderControllerImp) Webhook(writer http.ResponseWriter, reques
 
 	err := controller.orderService.ProcessWebhook(ctx, notification)
 	if err != nil {
+		log.Printf("[Webhook Error] Gagal memproses webhook Midtrans: %v", err.Error())
+
 		writer.Header().Set("Content-Type", "application/json")
 		writer.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(writer).Encode(dto.Response{
 			Code:   http.StatusInternalServerError,
 			Status: "server error",
-			Data:   err.Error(),
+			Data:   "500",
 		})
 		return
 	}
@@ -113,7 +116,7 @@ func (controller *OrderControllerImp) Webhook(writer http.ResponseWriter, reques
 	json.NewEncoder(writer).Encode(dto.Response{
 		Code:   http.StatusOK,
 		Status: "OK",
-		Data:   "succes",
+		Data:   "200",
 	})
 }
 
