@@ -104,7 +104,7 @@ func (controller *OrderControllerImp) Webhook(writer http.ResponseWriter, reques
 		json.NewEncoder(writer).Encode(dto.Response{
 			Code:   http.StatusInternalServerError,
 			Status: "server error",
-			Data:   "500",
+			Data:   err.Error(),
 		})
 		return
 	}
